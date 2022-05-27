@@ -1,0 +1,67 @@
+version: "3.3"
+services:
+  pg_A:
+    container_name: postgres_master
+    image: postgres
+    restart: always
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-1234}
+      PGDATA: /data/postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - /home/qarrale/data_master:/data/postgres
+  pg_B:
+    container_name: postgres_slave1
+    image: postgres
+    restart: always
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-1234}
+      PGDATA: /data/postgres
+    ports:
+      - "54321:5432"
+    volumes:
+      - /home/qarrale/data_slave1:/data/postgres
+  pg_C:
+    container_name: postgres_slave2
+    image: postgres
+    restart: always
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-1234}
+      PGDATA: /data/postgres
+    ports:
+      - "54322:5432"
+    volumes:
+      - /home/qarrale/data_slave2:/data/postgres
+  # pg_pool:
+  #   container_name: pgpool-II
+  #   restart: always
+  #   image: rueian/pgpool
+  #   ports:
+  #     - "5432:5432"
+  #   volumes:
+  #     - ./pgpool.conf:/etc/pgpool/pgpool.conf
+
+  pg_pool:
+    container_name: pg_pool-II
+    image: bitnami/pgpool
+    restart: always
+    ports:
+      - "54323:5432"
+    environment:
+      - PGPOOL_BACKEND_NODES=0:pg_A:5432,1:pg_B:5432,2:pg_C:5432
+      - PGPOOL_SR_CHECK_USER=repl
+      - PGPOOL_SR_CHECK_PASSWORD=1234
+      - PGPOOL_ENABLE_LDAP=no
+      - PGPOOL_POSTGRES_USERNAME=qarrale
+      - PGPOOL_POSTGRES_PASSWORD=1234
+      - PGPOOL_ADMIN_USERNAME=admin
+      - PGPOOL_ADMIN_PASSWORD=1234 
+
+
+  # lib/postgresql/14/bin
+  # /home/qarrale/data_slave1
+  
